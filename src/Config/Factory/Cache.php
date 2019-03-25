@@ -94,7 +94,15 @@ class Cache
                 'server' => $redisConfig[0]['host'],
                 'port' => $redisConfig[0]['port'],
                 'database' => 1,
+                'retry_reads_on_master' => '1',
+                'compress_data' => '1',
+                'compress_tags' => '1',
+                'compress_threshold' => '20480',
+                'compression_lib' => 'gzip',
             ],
+            'frontend_options' => [
+                'write_control' => false
+            ]
         ];
 
         $slaveConnectionData = $this->getSlaveConnection();

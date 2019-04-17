@@ -22,6 +22,12 @@ use Psr\Log\LoggerInterface;
 class Setup implements ProcessInterface
 {
     /**
+     * Exit code when application upgrade is required.
+     */
+    const EXIT_CODE_UPGRADE_REQUIRED = 2;
+    const EXIT_CODE_UPGRADE_NOT_REQUIRED = 0;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
@@ -89,25 +95,53 @@ class Setup implements ProcessInterface
      */
     public function execute()
     {
-        $this->flagManager->delete(FlagManager::FLAG_REGENERATE);
-
         try {
-            $verbosityLevel = $this->stageConfig->get(DeployInterface::VAR_VERBOSE_COMMANDS);
-            $installUpgradeLog = $this->fileList->getInstallUpgradeLog();
-
-            $this->logger->info('Running setup upgrade.');
-
-            $this->shell->execute('echo \'Updating time: \'$(date) | tee -a ' . $installUpgradeLog);
-            $this->shell->execute(sprintf(
-                '/bin/bash -c "set -o pipefail; %s | tee -a %s"',
-                'php ./bin/magento setup:upgrade --keep-generated --ansi --no-interaction ' . $verbosityLevel,
-                $installUpgradeLog
-            ));
+            $upgradeDependingOnDbStatus = $this->stageConfig->get(
+                DeployInterface::VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS
+            );
+            if (!$upgradeDependingOnDbStatus) {
+                $this->doUpgrade();
+                return;
+            }
+            $this->logger->notice('Run upgrade based on the database state');
+            $this->logger->info('Checks the database state');
+            $cmd = 'php bin/magento setup:db:status --ansi --no-interaction;echo $?';
+            $output = $this->shell->execute($cmd);
+            $exitCode = (int)array_pop($output);
+            switch ($exitCode) {
+                case self::EXIT_CODE_UPGRADE_NOT_REQUIRED:
+                    $this->logger->notice(implode(PHP_EOL, $output));
+                    $this->logger->notice('Skip run the upgrade process');
+                    break;
+                case self::EXIT_CODE_UPGRADE_REQUIRED:
+                    $this->logger->notice(implode(PHP_EOL, $output));
+                    $this->doUpgrade();
+                    break;
+                default:
+                    $this->logger->critical(implode(PHP_EOL, $output));
+                    throw new \RuntimeException("Command $cmd returned code $exitCode", $exitCode);
+            }
         } catch (\RuntimeException $exception) {
             //Rollback required by database
             throw new ProcessException($exception->getMessage(), 6, $exception);
         }
+    }
 
+    /**
+     * Runs Magento 2 upgrade
+     */
+    private function doUpgrade()
+    {
+        $this->flagManager->delete(FlagManager::FLAG_REGENERATE);
+        $verbosityLevel = $this->stageConfig->get(DeployInterface::VAR_VERBOSE_COMMANDS);
+        $installUpgradeLog = $this->fileList->getInstallUpgradeLog();
+        $this->logger->info('Running setup upgrade.');
+        $this->shell->execute('echo \'Updating time: \'$(date) | tee -a ' . $installUpgradeLog);
+        $this->shell->execute(sprintf(
+            '/bin/bash -c "set -o pipefail; %s | tee -a %s"',
+            'php ./bin/magento setup:upgrade --keep-generated --ansi --no-interaction ' . $verbosityLevel,
+            $installUpgradeLog
+        ));
         $this->flagManager->delete(FlagManager::FLAG_REGENERATE);
     }
 }

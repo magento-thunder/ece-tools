@@ -441,6 +441,15 @@ class Schema
                     StageConfigInterface::STAGE_DEPLOY => true,
                 ],
             ],
+            DeployInterface::VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS => [
+                self::SCHEMA_TYPE => ['boolean'],
+                self::SCHEMA_STAGE => [
+                    StageConfigInterface::STAGE_DEPLOY,
+                ],
+                self::SCHEMA_DEFAULT_VALUE => [
+                    StageConfigInterface::STAGE_DEPLOY => false,
+                ],
+            ],
             PostDeployInterface::VAR_WARM_UP_PAGES => [
                 self::SCHEMA_TYPE => ['array'],
                 self::SCHEMA_STAGE => [

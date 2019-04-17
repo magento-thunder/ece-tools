@@ -89,7 +89,7 @@ class SetupTest extends TestCase
     /**
      * @throws ProcessException
      */
-    public function testExecute()
+    public function testExecuteByDefault()
     {
         $installUpgradeLog = '/tmp/log.log';
 
@@ -98,10 +98,13 @@ class SetupTest extends TestCase
         $this->fileListMock->expects($this->once())
             ->method('getInstallUpgradeLog')
             ->willReturn($installUpgradeLog);
-        $this->stageConfigMock->expects($this->once())
+        $this->stageConfigMock->expects($this->exactly(2))
             ->method('get')
-            ->with(DeployInterface::VAR_VERBOSE_COMMANDS)
-            ->willReturn('-v');
+            ->withConsecutive(
+                [DeployInterface::VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS],
+                [DeployInterface::VAR_VERBOSE_COMMANDS]
+            )
+            ->willReturnOnConsecutiveCalls(false, '-v');
         $this->flagManagerMock->expects($this->exactly(2))
             ->method('delete')
             ->with(FlagManager::FLAG_REGENERATE);
@@ -110,12 +113,100 @@ class SetupTest extends TestCase
             ->withConsecutive(
                 ['echo \'Updating time: \'$(date) | tee -a ' . $installUpgradeLog],
                 ['/bin/bash -c "set -o pipefail; php ./bin/magento setup:upgrade '
-                . '--keep-generated --ansi --no-interaction -v | tee -a '
-                . $installUpgradeLog . '"']
+                    . '--keep-generated --ansi --no-interaction -v | tee -a '
+                    . $installUpgradeLog . '"']
             );
         $this->loggerMock->expects($this->once())
             ->method('info')
             ->with('Running setup upgrade.');
+
+        $this->process->execute();
+    }
+
+    public function testExecuteRunUpgradeDependingOnStatus()
+    {
+        $installUpgradeLog = '/tmp/log.log';
+
+        $this->directoryListMock->method('getMagentoRoot')
+            ->willReturn('magento_root');
+        $this->fileListMock->expects($this->once())
+            ->method('getInstallUpgradeLog')
+            ->willReturn($installUpgradeLog);
+        $this->stageConfigMock->expects($this->exactly(2))
+            ->method('get')
+            ->withConsecutive(
+                [DeployInterface::VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS],
+                [DeployInterface::VAR_VERBOSE_COMMANDS]
+            )
+            ->willReturnOnConsecutiveCalls(true, '-v');
+        $this->loggerMock->expects($this->exactly(2))
+            ->method('notice')
+            ->withConsecutive(
+                ['Run upgrade based on the database state'],
+                [<<<EOD
+The module code base doesn't match the DB schema and data.
+Magento_SomeModule     schema:       2.0.0  ->  2.0.1
+Magento_SomeModule       data:       2.0.0  ->  2.0.1
+Run 'setup:upgrade' to update your DB schema and data.
+EOD
+                ]
+            );
+        $this->loggerMock->expects($this->exactly(2))
+            ->method('info')
+            ->withConsecutive(
+                ['Checks the database state'],
+                ['Running setup upgrade.']
+            );
+        $this->flagManagerMock->expects($this->exactly(2))
+            ->method('delete')
+            ->with(FlagManager::FLAG_REGENERATE);
+        $this->shellMock->expects($this->exactly(3))
+            ->method('execute')
+            ->withConsecutive(
+                ['php bin/magento setup:db:status --ansi --no-interaction;echo $?'],
+                ['echo \'Updating time: \'$(date) | tee -a ' . $installUpgradeLog],
+                ['/bin/bash -c "set -o pipefail; php ./bin/magento setup:upgrade '
+                    . '--keep-generated --ansi --no-interaction -v | tee -a '
+                    . $installUpgradeLog . '"']
+            )
+            ->willReturnOnConsecutiveCalls(
+                [
+                    'The module code base doesn\'t match the DB schema and data.',
+                    'Magento_SomeModule     schema:       2.0.0  ->  2.0.1',
+                    'Magento_SomeModule       data:       2.0.0  ->  2.0.1',
+                    'Run \'setup:upgrade\' to update your DB schema and data.',
+                    2,
+                ],
+                [],
+                []
+            );
+
+        $this->process->execute();
+    }
+
+    public function testExecuteNotRunUpgradeDependingOnStatus()
+    {
+        $this->stageConfigMock->expects($this->once())
+            ->method('get')
+            ->with(DeployInterface::VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS)
+            ->willReturn(true);
+        $this->loggerMock->expects($this->exactly(3))
+            ->method('notice')
+            ->withConsecutive(
+                ['Run upgrade based on the database state'],
+                ['All modules are up to date.'],
+                ['Skip run the upgrade process']
+            );
+        $this->loggerMock->expects($this->once())
+            ->method('info')
+            ->with('Checks the database state');
+        $this->shellMock->expects($this->once())
+            ->method('execute')
+            ->with('php bin/magento setup:db:status --ansi --no-interaction;echo $?')
+            ->willReturn([
+                'All modules are up to date.',
+                0,
+            ]);
 
         $this->process->execute();
     }
@@ -132,6 +223,36 @@ class SetupTest extends TestCase
         $this->shellMock->expects($this->at(0))
             ->method('execute')
             ->willThrowException(new \RuntimeException('Error during command execution'));
+
+        $this->process->execute();
+    }
+
+    /**
+     * @expectedException \Magento\MagentoCloud\Process\ProcessException
+     * @expectedExceptionMessage Command php bin/magento setup:db:status --ansi --no-interaction;echo $? returned code 1
+     */
+    public function testExecuteDbStatusReturnOne()
+    {
+        $this->stageConfigMock->expects($this->once())
+            ->method('get')
+            ->with(DeployInterface::VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS)
+            ->willReturn(true);
+        $this->loggerMock->expects($this->once())
+            ->method('notice')
+            ->with('Run upgrade based on the database state');
+        $this->loggerMock->expects($this->once())
+            ->method('info')
+            ->with('Checks the database state');
+        $this->shellMock->expects($this->once())
+            ->method('execute')
+            ->with('php bin/magento setup:db:status --ansi --no-interaction;echo $?')
+            ->willReturn([
+                'Some message',
+                1,
+            ]);
+        $this->loggerMock->expects($this->once())
+            ->method('critical')
+            ->with('Some message');
 
         $this->process->execute();
     }

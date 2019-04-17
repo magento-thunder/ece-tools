@@ -53,4 +53,9 @@ interface DeployInterface extends StageConfigInterface
      * The variable responsible for enabling google analytics in environments other than prod.
      */
     const VAR_ENABLE_GOOGLE_ANALYTICS = 'ENABLE_GOOGLE_ANALYTICS';
+
+    /**
+     * The variable responsible to run the upgrade process the depending on database state.
+     */
+    const VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS = 'RUN_UPGRADE_DEPENDING_ON_DB_STATUS';
 }

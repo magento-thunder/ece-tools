@@ -77,6 +77,7 @@ class SchemaTest extends TestCase
                 DeployInterface::VAR_ENABLE_GOOGLE_ANALYTICS => false,
                 DeployInterface::VAR_SCD_MATRIX => [],
                 DeployInterface::VAR_RESOURCE_CONFIGURATION => [],
+                DeployInterface::VAR_RUN_UPGRADE_DEPENDING_ON_DB_STATUS => false,
             ],
             $this->schema->getDefaults(StageConfigInterface::STAGE_DEPLOY)
         );

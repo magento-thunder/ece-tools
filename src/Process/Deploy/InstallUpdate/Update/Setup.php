@@ -105,7 +105,7 @@ class Setup implements ProcessInterface
             }
             $this->logger->notice('Run upgrade based on the database state');
             $this->logger->info('Checks the database state');
-            $cmd = 'php bin/magento setup:db:status --ansi --no-interaction;echo $?';
+            $cmd = 'php bin/magento setup:db:status --no-ansi --no-interaction;echo $?';
             $output = $this->shell->execute($cmd);
             $exitCode = (int)array_pop($output);
             switch ($exitCode) {

@@ -36,21 +36,10 @@ class VarnishService implements ServiceInterface
         $this->version = $version;
     }
 
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
         return [
-            'varnish' => [
-                'image' => sprintf('magento/magento-cloud-docker-varnish:%s', $this->version),
-                'depends_on' => ['web'],
-                'environment' => [
-                    'VIRTUAL_HOST=magento2.docker',
-                    'VIRTUAL_PORT=80',
-                    'HTTPS_METHOD=noredirect',
-                ],
-                'ports' => [
-                    '80:80'
-                ],
-            ]
+            'image' => sprintf('magento/magento-cloud-docker-varnish:%s', $this->version),
         ];
     }
 

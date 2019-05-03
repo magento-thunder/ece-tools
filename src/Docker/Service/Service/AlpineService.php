@@ -11,9 +11,9 @@ use Magento\MagentoCloud\Docker\ConfigurationMismatchException;
 use Magento\MagentoCloud\Docker\Service\ServiceInterface;
 
 /**
- * Tls Service
+ * Alpine Service
  */
-class TlsService implements ServiceInterface
+class AlpineService implements ServiceInterface
 {
     /**
      * Current version
@@ -29,7 +29,7 @@ class TlsService implements ServiceInterface
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(sprintf(
-                'Tls version $version does not supported',
+                'Alpine Docker image version $version does not supported',
                 $version
             ));
         }
@@ -42,7 +42,7 @@ class TlsService implements ServiceInterface
     public function getConfig(): array
     {
         return [
-            'image' => 'magento/magento-cloud-docker-tls:%s',
+            'image' => sprintf('alpine:%s', $this->version),
         ];
     }
 

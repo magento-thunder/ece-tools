@@ -206,6 +206,8 @@ class Build extends Command
             Yaml::dump($builder->build($config), 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK)
         );
 
+
+
         $this->distGenerator->generate();
 
         try {

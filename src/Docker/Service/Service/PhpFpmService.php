@@ -13,7 +13,7 @@ use Magento\MagentoCloud\Docker\Service\ServiceInterface;
 /**
  * Fpm Service
  */
-class FpmService implements ServiceInterface
+class PhpFpmService implements ServiceInterface
 {
     /**
      * Current version
@@ -39,26 +39,16 @@ class FpmService implements ServiceInterface
     /**
      * @inheritdoc
      */
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
         return [
-            'fpm' => [
-                'image' => sprintf('magento/magento-cloud-docker-php:%s-fpm', $this->version),
-                'ports' => [9000],
-                'depends_on' => ['db'],
-                'extends' => 'generic',
-                'volumes' => [
-                    'magento:/app:ro',
-                    'magento-vendor:/app/vendor:ro',
-                    'magento-generated:/app/generated:ro',
-                    'magento-setup:/app/setup:ro',
-                    'magento-var:/app/var:rw',
-                    'magento-etc:/app/app/etc:rw',
-                    'magento-static:/app/pub/static:rw',
-                    'magento-media:/app/pub/media:rw',
-                ],
-            ]
+            'image' => sprintf('magento/magento-cloud-docker-php:%s-fpm', $this->version),
+            'ports' => [9000]
         ];
+    }
+
+    public function generateDependedFiles()
+    {
     }
 
     /**

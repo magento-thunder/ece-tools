@@ -35,17 +35,17 @@ class RedisService implements ServiceInterface
         $this->version = $version;
     }
 
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
         return [
-            'redis' => [
-                'image' => sprintf('redis:%s', $this->version),
-                'volumes' => [
-                    '/data',
-                ],
-                'ports' => [6379],
-            ]
+            'image' => sprintf('redis:%s', $this->version),
+            'volumes' => ['/data'],
+            'ports' => [6379],
         ];
+    }
+
+    public function generateDependedFiles()
+    {
     }
 
     /**

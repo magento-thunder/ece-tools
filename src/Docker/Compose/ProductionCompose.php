@@ -77,24 +77,30 @@ class ProductionCompose implements ComposeManagerInterface
     {
         $phpVersion = $config->get(Config::KEY_PHP, '') ?: $this->config->getPhpVersion();
         $dbVersion = $config->get(Config::KEY_DB, '') ?: $this->config->getServiceVersion(Config::KEY_DB);
+        $dbService = $this->serviceFactory->create(
+            ServiceFactory::SERVICE_MARIADB,
+            $dbVersion,
+            [
+                'volumes' => [
+                    './docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d',
+                ],
+                'environment' => [
+                    'MYSQL_ROOT_PASSWORD=magento2',
+                    'MYSQL_DATABASE=magento2',
+                    'MYSQL_USER=magento2',
+                    'MYSQL_PASSWORD=magento2',
+                ],
+            ]
+        );
+
+
+
+
+
 
         $services = [
             'db' => $this->serviceFactory->create(
-                ServiceFactory::SERVICE_DB,
-                $dbVersion,
-                [
-                    'ports' => [3306],
-                    'volumes' => [
-                        '/var/lib/mysql',
-                        './docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d',
-                    ],
-                    'environment' => [
-                        'MYSQL_ROOT_PASSWORD=magento2',
-                        'MYSQL_DATABASE=magento2',
-                        'MYSQL_USER=magento2',
-                        'MYSQL_PASSWORD=magento2',
-                    ],
-                ]
+
             )
         ];
 
@@ -246,7 +252,8 @@ class ProductionCompose implements ComposeManagerInterface
         bool $isReadOnly,
         array $depends,
         string $hostname
-    ): array {
+    ): array
+    {
         $config = $this->serviceFactory->create(
             ServiceFactory::SERVICE_CLI,
             $version,

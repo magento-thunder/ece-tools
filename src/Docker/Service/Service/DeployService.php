@@ -39,28 +39,10 @@ class DeployService implements ServiceInterface
     /**
      * @inheritdoc
      */
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
         return [
-            'build' => [
-                'image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version),
-                'hostname' => 'build.magento2.docker',
-                'depends_on' => ['db', 'redis'],
-                'extends' => 'generic',
-                'volumes' => [
-                    'magento:/app:ro',
-                    'magento-vendor:/app/vendor:ro',
-                    'magento-generated:/app/generated:ro',
-                    'magento-setup:/app/setup:ro',
-                    'magento-var:/app/var:rw',
-                    'magento-etc:/app/app/etc:rw',
-                    'magento-static:/app/pub/static:rw',
-                    'magento-media:/app/pub/media:rw',
-                    '~/.composer/cache:/root/.composer/cache',
-                    './docker/mnt:/mnt',
-                    './docker/tmp:/tmp',
-                ]
-            ]
+            'image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version),
         ];
     }
 

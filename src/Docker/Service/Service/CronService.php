@@ -39,12 +39,10 @@ class CronService implements ServiceInterface
     /**
      * @inheritdoc
      */
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
         return [
-            'cron' => [
-                'image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version),
-            ]
+            'image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version),
         ];
     }
 

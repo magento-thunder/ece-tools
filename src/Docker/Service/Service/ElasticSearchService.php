@@ -11,9 +11,9 @@ use Magento\MagentoCloud\Docker\ConfigurationMismatchException;
 use Magento\MagentoCloud\Docker\Service\ServiceInterface;
 
 /**
- * Generic Service
+ * Elastic Search service
  */
-class GenericService implements ServiceInterface
+class ElasticSearchService implements ServiceInterface
 {
     /**
      * Current version
@@ -29,22 +29,17 @@ class GenericService implements ServiceInterface
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(sprintf(
-                'Alpine Docker image version $version does not supported',
+                'Elastic Search version %s does not supported',
                 $version
             ));
         }
         $this->version = $version;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
         return [
-            'cron' => [
-                'image' => sprintf('alpine:%s', $this->version),
-            ]
+            'image' => sprintf('magento/magento-cloud-docker-elasticsearch:%s', $this->version),
         ];
     }
 
@@ -55,6 +50,7 @@ class GenericService implements ServiceInterface
      */
     private function getSupportedVersions()
     {
-        return ['latest'];
+        return ['1.7', '2.4', '5.2', '6.5'];
     }
+
 }

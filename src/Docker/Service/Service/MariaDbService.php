@@ -11,21 +11,31 @@ use Magento\MagentoCloud\Docker\ConfigurationMismatchException;
 use Magento\MagentoCloud\Docker\Service\ServiceInterface;
 
 /**
- * Db service
+ * MariaDb service
  */
-class DbService implements ServiceInterface
+class MariaDbService implements ServiceInterface
 {
     /**
      * Current version
-     * @var string $version
+     *
+     * @var string
      */
     private $version;
 
     /**
+     * Extended Config
+     *
+     * @var array
+     */
+    private $extendedConfig;
+
+    /**
+     * MariaDbService constructor.
      * @param string $version
+     * @param array $extendedConfig
      * @throws ConfigurationMismatchException
      */
-    public function __construct(string $version)
+    public function __construct(string $version, array $extendedConfig = [])
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(
@@ -33,29 +43,31 @@ class DbService implements ServiceInterface
             );
         }
         $this->version = $version;
+        $this->extendedConfig = $extendedConfig;
     }
 
     /**
      * @inheritdoc
      */
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
-        return [
-            'db' => [
+        return array_replace_recursive(
+            [
                 'image' => sprintf('mariadb:%s', $this->version),
                 'ports' => [3306],
                 'volumes' => [
                     '/var/lib/mysql',
-                    './docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d',
-                ],
-                'environment' => [
-                    'MYSQL_ROOT_PASSWORD=magento2',
-                    'MYSQL_DATABASE=magento2',
-                    'MYSQL_USER=magento2',
-                    'MYSQL_PASSWORD=magento2',
                 ],
             ],
-        ];
+            $this->extendedConfig
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function generateDependedFiles()
+    {
     }
 
     /**

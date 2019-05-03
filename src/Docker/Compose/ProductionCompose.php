@@ -14,6 +14,9 @@ use Magento\MagentoCloud\Docker\Config\Converter;
 use Magento\MagentoCloud\Docker\ConfigurationMismatchException;
 use Magento\MagentoCloud\Docker\Service\ServiceFactory;
 use Magento\MagentoCloud\Filesystem\FileList;
+use Symfony\Component\Yaml\Yaml;
+use Magento\MagentoCloud\Filesystem\Driver\File;
+use Magento\MagentoCloud\Docker\Config\DistGenerator;
 
 /**
  * Production compose configuration.
@@ -49,21 +52,38 @@ class ProductionCompose implements ComposeManagerInterface
     private $converter;
 
     /**
+     * @var File
+     */
+    private $file;
+
+    /**
+     * @var DistGenerator
+     */
+    private $distGenerator;
+
+    /**
      * @param ServiceFactory $serviceFactory
      * @param FileList $fileList
      * @param Config $config
      * @param Converter $converter
+     * @param File $file
+     * @param DistGenerator $distGenerator
      */
     public function __construct(
         ServiceFactory $serviceFactory,
         FileList $fileList,
         Config $config,
-        Converter $converter
-    ) {
+        Converter $converter,
+        File $file,
+        DistGenerator $distGenerator
+    )
+    {
         $this->serviceFactory = $serviceFactory;
         $this->fileList = $fileList;
         $this->config = $config;
         $this->converter = $converter;
+        $this->file = $file;
+        $this->distGenerator = $distGenerator;
     }
 
     /**
@@ -73,68 +93,61 @@ class ProductionCompose implements ComposeManagerInterface
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      * @SuppressWarnings(PHPMD.NPathComplexity)
      */
-    public function build(Repository $config): array
+    public function build(Repository $config)
     {
         $phpVersion = $config->get(Config::KEY_PHP, '') ?: $this->config->getPhpVersion();
         $dbVersion = $config->get(Config::KEY_DB, '') ?: $this->config->getServiceVersion(Config::KEY_DB);
-        $dbService = $this->serviceFactory->create(
-            ServiceFactory::SERVICE_MARIADB,
-            $dbVersion,
-            [
-                'volumes' => [
-                    './docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d',
-                ],
-                'environment' => [
-                    'MYSQL_ROOT_PASSWORD=magento2',
-                    'MYSQL_DATABASE=magento2',
-                    'MYSQL_USER=magento2',
-                    'MYSQL_PASSWORD=magento2',
-                ],
-            ]
-        );
-
-
-
-
-
-
         $services = [
             'db' => $this->serviceFactory->create(
-
+                ServiceFactory::SERVICE_DB,
+                $dbVersion,
+                [
+                    'ports' => [3306],
+                    'volumes' => [
+                        '/var/lib/mysql',
+                        './docker/mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d',
+                    ],
+                    'environment' => [
+                        'MYSQL_ROOT_PASSWORD=magento2',
+                        'MYSQL_DATABASE=magento2',
+                        'MYSQL_USER=magento2',
+                        'MYSQL_PASSWORD=magento2',
+                    ],
+                ]
             )
         ];
-
         $redisVersion = $config->get(Config::KEY_REDIS) ?: $this->config->getServiceVersion(Config::KEY_REDIS);
-
         if ($redisVersion) {
             $services['redis'] = $this->serviceFactory->create(
                 ServiceFactory::SERVICE_REDIS,
                 $redisVersion
             );
         }
-
         $esVersion = $config->get(Config::KEY_ELASTICSEARCH)
             ?: $this->config->getServiceVersion(Config::KEY_ELASTICSEARCH);
-
         if ($esVersion) {
             $services['elasticsearch'] = $this->serviceFactory->create(
                 ServiceFactory::SERVICE_ELASTICSEARCH,
                 $esVersion
             );
         }
-
+        $nodeVersion = $config->get(Config::KEY_NODE);
+        if ($nodeVersion) {
+            $services['node'] = $this->serviceFactory->create(
+                ServiceFactory::SERVICE_NODE,
+                $nodeVersion,
+                ['volumes' => [$this->getMagentoVolumes(false)]]
+            );
+        }
         $rabbitMQVersion = $config->get(Config::KEY_RABBITMQ)
             ?: $this->config->getServiceVersion(Config::KEY_RABBITMQ);
-
         if ($rabbitMQVersion) {
             $services['rabbitmq'] = $this->serviceFactory->create(
                 ServiceFactory::SERVICE_RABBIT_MQ,
                 $rabbitMQVersion
             );
         }
-
         $cliDepends = array_keys($services);
-
         $services['fpm'] = $this->serviceFactory->create(
             ServiceFactory::SERVICE_FPM,
             $phpVersion,
@@ -174,14 +187,12 @@ class ProductionCompose implements ComposeManagerInterface
                 './docker/config.env',
             ],
         ];
-
         $volumeConfig = [
             'driver_opts' => [
                 'type' => 'tmpfs',
                 'device' => 'tmpfs'
             ]
         ];
-
         return [
             'version' => '2',
             'services' => $services,
@@ -202,6 +213,14 @@ class ProductionCompose implements ComposeManagerInterface
                 'magento-media' => $volumeConfig,
             ]
         ];
+
+
+        $this->file->filePutContents(
+            $builder->getConfigPath(),
+            Yaml::dump(, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK)
+        );
+
+        $this->distGenerator->generate();
     }
 
     /**

@@ -55,9 +55,7 @@ class MariaDbService implements ServiceInterface
             [
                 'image' => sprintf('mariadb:%s', $this->version),
                 'ports' => [3306],
-                'volumes' => [
-                    '/var/lib/mysql',
-                ],
+                'volumes' => ['/var/lib/mysql'],
             ],
             $this->extendedConfig
         );
@@ -66,7 +64,7 @@ class MariaDbService implements ServiceInterface
     /**
      * @inheritdoc
      */
-    public function getDepends()
+    public function getDepends(): array
     {
         return [];
     }

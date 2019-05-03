@@ -60,8 +60,9 @@ class PhpFpmService implements ServiceInterface
         );
     }
 
-    public function generateDependedFiles()
+    public function getDepends(): array
     {
+        return [];
     }
 
     /**

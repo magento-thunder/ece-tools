@@ -52,10 +52,9 @@ class AlpineService implements ServiceInterface
     public function getConfig(): array
     {
         return array_replace_recursive(
-            [
-                'image' => sprintf('alpine:%s', $this->version),
-            ],
-            $this->extendedConfig);
+            ['image' => sprintf('alpine:%s', $this->version)],
+            $this->extendedConfig
+        );
     }
 
     /**

@@ -52,9 +52,7 @@ class CronService implements ServiceInterface
     public function getConfig(): array
     {
         return array_replace_recursive(
-            [
-                'image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version),
-            ],
+            ['image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version)],
             $this->extendedConfig
         );
     }

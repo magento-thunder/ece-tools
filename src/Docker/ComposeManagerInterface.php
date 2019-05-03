@@ -21,13 +21,8 @@ interface ComposeManagerInterface
 
     /**
      * @param Repository $config
-     * @return array
+     * @return void
      * @throws ConfigurationMismatchException
      */
-    public function build(Repository $config): array;
-
-    /**
-     * @return string
-     */
-    public function getConfigPath(): string;
+    public function build(Repository $config);
 }

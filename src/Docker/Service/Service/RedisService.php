@@ -22,10 +22,19 @@ class RedisService implements ServiceInterface
     private $version;
 
     /**
+     * Extended Config
+     *
+     * @var array
+     */
+    private $extendedConfig;
+
+    /**
+     * RedisService constructor.
      * @param string $version
+     * @param array $extendedConfig
      * @throws ConfigurationMismatchException
      */
-    public function __construct(string $version)
+    public function __construct(string $version, array $extendedConfig = [])
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(
@@ -33,6 +42,7 @@ class RedisService implements ServiceInterface
             );
         }
         $this->version = $version;
+        $this->extendedConfig = $extendedConfig;
     }
 
     public function getConfig(): array
@@ -44,8 +54,9 @@ class RedisService implements ServiceInterface
         ];
     }
 
-    public function generateDependedFiles()
+    public function getDepends(): array
     {
+        return [];
     }
 
     /**

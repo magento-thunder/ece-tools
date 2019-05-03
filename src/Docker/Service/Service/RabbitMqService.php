@@ -8,11 +8,12 @@ declare(strict_types=1);
 namespace Magento\MagentoCloud\Docker\Service\Service;
 
 use Magento\MagentoCloud\Docker\ConfigurationMismatchException;
+use Magento\MagentoCloud\Docker\Service\ServiceInterface;
 
 /**
  * RabbitMq Service
  */
-class RabbitMqService
+class RabbitMqService implements ServiceInterface
 {
     /**
      * Current version
@@ -21,10 +22,19 @@ class RabbitMqService
     private $version;
 
     /**
+     * Extended Config
+     *
+     * @var array
+     */
+    private $extendedConfig;
+
+    /**
+     * RabbitMqService constructor.
      * @param string $version
+     * @param array $extendedConfig
      * @throws ConfigurationMismatchException
      */
-    public function __construct(string $version)
+    public function __construct(string $version, array $extendedConfig = [])
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(sprintf(
@@ -33,13 +43,22 @@ class RabbitMqService
             ));
         }
         $this->version = $version;
+        $this->extendedConfig = $extendedConfig;
     }
 
-    public function getComposeConfig(): array
+    public function getConfig(): array
     {
-        return [
-            'image' => sprintf('rabbitmq:%s', $this->version),
-        ];
+        return array_replace_recursive(
+            [
+                'image' => sprintf('rabbitmq:%s', $this->version),
+            ],
+            $this->extendedConfig
+        );
+    }
+
+    public function getDepends(): array
+    {
+        return [];
     }
 
     /**

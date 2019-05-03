@@ -22,10 +22,17 @@ class VarnishService implements ServiceInterface
     private $version;
 
     /**
+     * Extended Config
+     *
+     * @var array
+     */
+    private $extendedConfig;
+
+    /**
      * @param string $version
      * @throws ConfigurationMismatchException
      */
-    public function __construct(string $version)
+    public function __construct(string $version, array $extendedConfig = [])
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(sprintf(
@@ -34,13 +41,22 @@ class VarnishService implements ServiceInterface
             ));
         }
         $this->version = $version;
+        $this->extendedConfig = $extendedConfig;
     }
 
     public function getConfig(): array
     {
-        return [
-            'image' => sprintf('magento/magento-cloud-docker-varnish:%s', $this->version),
-        ];
+        return array_merge_recursive(
+            [
+                'image' => sprintf('magento/magento-cloud-docker-varnish:%s', $this->version),
+            ],
+            $this->extendedConfig
+        );
+    }
+
+    public function getDepends(): array
+    {
+        return [];
     }
 
     /**

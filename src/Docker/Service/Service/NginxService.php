@@ -22,10 +22,17 @@ class NginxService implements ServiceInterface
     private $version;
 
     /**
+     * Extended Config
+     *
+     * @var array
+     */
+    private $extendedConfig;
+
+    /**
      * @param string $version
      * @throws ConfigurationMismatchException
      */
-    public function __construct(string $version)
+    public function __construct(string $version, array $extendedConfig = [])
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(sprintf(
@@ -34,6 +41,7 @@ class NginxService implements ServiceInterface
             ));
         }
         $this->version = $version;
+        $this->extendedConfig = $extendedConfig;
     }
 
     /**
@@ -41,9 +49,12 @@ class NginxService implements ServiceInterface
      */
     public function getConfig(): array
     {
-        return [
-            'image' => sprintf('magento/magento-cloud-docker-nginx:%s', $this->version),
-        ];
+        return array_replace_recursive(
+            [
+                'image' => sprintf('magento/magento-cloud-docker-nginx:%s', $this->version),
+            ],
+            $this->extendedConfig
+        );
     }
 
     /**

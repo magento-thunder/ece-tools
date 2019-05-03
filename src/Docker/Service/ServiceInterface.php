@@ -7,16 +7,16 @@ declare(strict_types=1);
 
 namespace Magento\MagentoCloud\Docker\Service;
 
-use Illuminate\Config\Repository;
-
 /**
  * Service Interface
  */
 interface ServiceInterface
 {
+    const TYPE_DEPEND_DOCKERFILE = 'dockerfile';
 
     /**
      * Return docker compose configuration
+     *
      * @return array
      */
     public function getConfig(): array;
@@ -24,7 +24,7 @@ interface ServiceInterface
     /**
      * Return depend configuration
      *
-     * @return Repository
+     * @return array
      */
-    public function getDepends();
+    public function getDepends(): array;
 }

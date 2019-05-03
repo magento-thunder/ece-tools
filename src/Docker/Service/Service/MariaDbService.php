@@ -66,8 +66,9 @@ class MariaDbService implements ServiceInterface
     /**
      * @inheritdoc
      */
-    public function generateDependedFiles()
+    public function getDepends()
     {
+        return [];
     }
 
     /**

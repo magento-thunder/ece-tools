@@ -22,10 +22,19 @@ class CronService implements ServiceInterface
     private $version;
 
     /**
+     * Extended Config
+     *
+     * @var array
+     */
+    private $extendedConfig;
+
+    /**
+     * CronService constructor.
      * @param string $version
+     * @param array $extendedConfig
      * @throws ConfigurationMismatchException
      */
-    public function __construct(string $version)
+    public function __construct(string $version, array $extendedConfig = [])
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(sprintf(
@@ -34,6 +43,7 @@ class CronService implements ServiceInterface
             ));
         }
         $this->version = $version;
+        $this->extendedConfig = $extendedConfig;
     }
 
     /**
@@ -41,9 +51,18 @@ class CronService implements ServiceInterface
      */
     public function getConfig(): array
     {
-        return [
-            'image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version),
-        ];
+        return array_replace_recursive(
+            [
+                'image' => sprintf('magento/magento-cloud-docker-php:%s-cli', $this->version),
+            ],
+            $this->extendedConfig
+        );
+    }
+
+
+    public function getDepends(): array
+    {
+        return [];
     }
 
     /**
@@ -55,4 +74,5 @@ class CronService implements ServiceInterface
     {
         return ['7.0', '7.1', '7.2'];
     }
+
 }

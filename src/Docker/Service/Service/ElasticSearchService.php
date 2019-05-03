@@ -22,10 +22,19 @@ class ElasticSearchService implements ServiceInterface
     private $version;
 
     /**
+     * Extended Config
+     *
+     * @var array
+     */
+    private $extendedConfig;
+
+    /**
+     * ElasticSearchService constructor.
      * @param string $version
+     * @param array $extendedConfig
      * @throws ConfigurationMismatchException
      */
-    public function __construct(string $version)
+    public function __construct(string $version, array $extendedConfig = [])
     {
         if (!in_array($version, $this->getSupportedVersions(), true)) {
             throw new ConfigurationMismatchException(sprintf(
@@ -34,13 +43,22 @@ class ElasticSearchService implements ServiceInterface
             ));
         }
         $this->version = $version;
+        $this->extendedConfig = $extendedConfig;
     }
 
     public function getConfig(): array
     {
-        return [
-            'image' => sprintf('magento/magento-cloud-docker-elasticsearch:%s', $this->version),
-        ];
+        return array_replace_recursive(
+            [
+                'image' => sprintf('magento/magento-cloud-docker-elasticsearch:%s', $this->version),
+            ],
+            $this->extendedConfig
+        );
+    }
+
+    public function getDepends(): array
+    {
+        return [];
     }
 
     /**

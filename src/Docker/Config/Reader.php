@@ -62,8 +62,13 @@ class Reader implements ReaderInterface
             throw new FileSystemException('Relationships could not be parsed.');
         }
 
+        if (!isset($appConfig['runtime']['extensions'])) {
+            throw new FileSystemException('Runtime extensions could not be parsed.');
+        }
+
         $config = [
             'type' => $appConfig['type'],
+            'runtimeExtensions' => $appConfig['runtime']['extensions'],
             'crons' => $appConfig['crons'] ?? [],
             'services' => []
         ];

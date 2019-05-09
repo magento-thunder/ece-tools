@@ -13,6 +13,7 @@ use Magento\MagentoCloud\Docker\ComposeManagerFactory;
 use Magento\MagentoCloud\Docker\Config\DistGenerator;
 use Magento\MagentoCloud\Docker\ConfigurationMismatchException;
 use Magento\MagentoCloud\Docker\Service\Config;
+use Magento\MagentoCloud\Docker\Service\DockerfileGenerator;
 use Magento\MagentoCloud\Docker\Service\Version\Validator as VersionValidator;
 use Magento\MagentoCloud\Filesystem\Driver\File;
 use Magento\MagentoCloud\Filesystem\FileSystemException;
@@ -73,6 +74,11 @@ class Build extends Command
     private $serviceConfig;
 
     /**
+     * @var DockerfileGenerator
+     */
+    private $phpDockerfileGenerator;
+
+    /**
      * @var VersionValidator
      */
     private $versionValidator;
@@ -84,6 +90,7 @@ class Build extends Command
      * @param RepositoryFactory $configFactory
      * @param Config $serviceConfig
      * @param VersionValidator $versionValidator
+     * @param DockerfileGenerator $phpDockerfileGenerator
      * @param DistGenerator $distGenerator
      */
     public function __construct(
@@ -93,14 +100,16 @@ class Build extends Command
         RepositoryFactory $configFactory,
         Config $serviceConfig,
         VersionValidator $versionValidator,
+        DockerfileGenerator $phpDockerfileGenerator,
         DistGenerator $distGenerator
-    ) {
+    ){
         $this->builderFactory = $builderFactory;
         $this->file = $file;
         $this->environment = $environment;
         $this->configFactory = $configFactory;
         $this->serviceConfig = $serviceConfig;
         $this->versionValidator = $versionValidator;
+        $this->phpDockerfileGenerator = $phpDockerfileGenerator;
         $this->distGenerator = $distGenerator;
 
         parent::__construct();
@@ -213,6 +222,7 @@ class Build extends Command
             Yaml::dump($builder->build($config), 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK)
         );
 
+        $this->phpDockerfileGenerator->generate($config);
         $this->distGenerator->generate();
 
         try {

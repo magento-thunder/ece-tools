@@ -132,6 +132,19 @@ class Config
     }
 
     /**
+     * @return array
+     * @throws ConfigurationMismatchException
+     */
+    public function getPhpExtensions(): array
+    {
+        try {
+            return $this->reader->read()['runtimeExtensions'];
+        } catch (FileSystemException $exception) {
+            throw new ConfigurationMismatchException($exception->getMessage(), $exception->getCode(), $exception);
+        }
+    }
+
+    /**
      * Retrieves cron configuration.
      *
      * @return array

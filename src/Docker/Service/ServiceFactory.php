@@ -27,12 +27,10 @@ class ServiceFactory
 
     const CONFIG = [
         self::SERVICE_CLI => [
-            'image' => 'magento/magento-cloud-docker-php:%s-cli',
-            'versions' => ['7.0', '7.1', '7.2']
+            'build' => DockerfileGenerator::PHP_CLI_BUILD_CONTEXT,
         ],
         self::SERVICE_FPM => [
-            'image' => 'magento/magento-cloud-docker-php:%s-fpm',
-            'versions' => ['7.0', '7.1', '7.2']
+            'build' => DockerfileGenerator::PHP_FPM_BUILD_CONTEXT,
         ],
         self::SERVICE_DB => [
             'image' => 'mariadb:%s',
@@ -99,7 +97,7 @@ class ServiceFactory
      * @return array
      * @throws ConfigurationMismatchException
      */
-    public function create(string $name, string $version, array $extendedConfig = []): array
+    public function create(string $name, string $version = null, array $extendedConfig = []): array
     {
         if (!array_key_exists($name, self::CONFIG)) {
             throw new ConfigurationMismatchException(sprintf(
@@ -112,7 +110,9 @@ class ServiceFactory
         $defaultConfig = $metaConfig['config'] ?? [];
 
         return array_replace(
-            ['image' => sprintf($metaConfig['image'], $version)],
+            isset($metaConfig['build'])
+                ? ['build' => $metaConfig['build']]
+                : ['image' => sprintf($metaConfig['image'], $version)],
             $defaultConfig,
             $extendedConfig
         );

@@ -75,7 +75,6 @@ class ProductionCompose implements ComposeManagerInterface
      */
     public function build(Repository $config): array
     {
-        $phpVersion = $config->get(Config::KEY_PHP, '') ?: $this->config->getPhpVersion();
         $dbVersion = $config->get(Config::KEY_DB, '') ?: $this->config->getServiceVersion(Config::KEY_DB);
 
         $services = [
@@ -141,7 +140,7 @@ class ProductionCompose implements ComposeManagerInterface
 
         $services['fpm'] = $this->serviceFactory->create(
             ServiceFactory::SERVICE_FPM,
-            $phpVersion,
+            null,
             [
                 'ports' => [9000],
                 'depends_on' => ['db'],
@@ -149,8 +148,8 @@ class ProductionCompose implements ComposeManagerInterface
                 'volumes' => $this->getMagentoVolumes(true),
             ]
         );
-        $services['build'] = $this->getCliService($phpVersion, false, $cliDepends, 'build.magento2.docker');
-        $services['deploy'] = $this->getCliService($phpVersion, true, $cliDepends, 'deploy.magento2.docker');
+        $services['build'] = $this->getCliService(false, $cliDepends, 'build.magento2.docker');
+        $services['deploy'] = $this->getCliService(true, $cliDepends, 'deploy.magento2.docker');
         $services['web'] = $this->serviceFactory->create(
             ServiceFactory::SERVICE_NGINX,
             $config->get(Config::KEY_NGINX, self::DEFAULT_NGINX_VERSION),
@@ -170,7 +169,7 @@ class ProductionCompose implements ComposeManagerInterface
             self::DEFAULT_TLS_VERSION,
             ['depends_on' => ['varnish']]
         );
-        $services['cron'] = $this->getCronCliService($phpVersion, true, $cliDepends, 'cron.magento2.docker');
+        $services['cron'] = $this->getCronCliService(true, $cliDepends, 'cron.magento2.docker');
         $services['generic'] = [
             'image' => 'alpine',
             'environment' => $this->converter->convert($this->getVariables()),
@@ -209,16 +208,15 @@ class ProductionCompose implements ComposeManagerInterface
     }
 
     /**
-     * @param string $version
      * @param bool $isReadOnly
      * @param array $depends
      * @param string $hostname
      * @return array
      * @throws ConfigurationMismatchException
      */
-    private function getCronCliService(string $version, bool $isReadOnly, array $depends, string $hostname): array
+    private function getCronCliService( bool $isReadOnly, array $depends, string $hostname): array
     {
-        $config = $this->getCliService($version, $isReadOnly, $depends, $hostname);
+        $config = $this->getCliService($isReadOnly, $depends, $hostname);
 
         if ($cronConfig = $this->config->getCron()) {
             $preparedCronConfig = [];
@@ -244,7 +242,6 @@ class ProductionCompose implements ComposeManagerInterface
     }
 
     /**
-     * @param string $version
      * @param bool $isReadOnly
      * @param array $depends
      * @param string $hostname
@@ -252,14 +249,13 @@ class ProductionCompose implements ComposeManagerInterface
      * @throws ConfigurationMismatchException
      */
     private function getCliService(
-        string $version,
         bool $isReadOnly,
         array $depends,
         string $hostname
     ): array {
         $config = $this->serviceFactory->create(
             ServiceFactory::SERVICE_CLI,
-            $version,
+            null,
             [
                 'hostname' => $hostname,
                 'depends_on' => $depends,

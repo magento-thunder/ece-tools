@@ -8,7 +8,6 @@ use Magento\MagentoCloud\Docker\ConfigurationMismatchException;
 use Magento\MagentoCloud\Filesystem\Driver\File;
 use Magento\MagentoCloud\Filesystem\DirectoryList;
 use Illuminate\Contracts\Config\Repository;
-use PHP_CodeSniffer\Exceptions\RuntimeException;
 
 class DockerfileGenerator
 {
@@ -74,6 +73,7 @@ class DockerfileGenerator
         $result[] = 'FROM ' . $config['image'];
         if (isset($config['entrypoint'])) {
             $result[] = 'ENTRYPOINT ["' . $config['entrypoint'] . '"]';
+            $result[] = 'RUN '.$config['entrypoint'];
         }
 
         if (!empty($config['extensions'])) {

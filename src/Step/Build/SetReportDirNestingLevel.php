@@ -63,7 +63,7 @@ class SetReportDirNestingLevel implements StepInterface
      */
     public function execute()
     {
-        $this->logger->info('Configuring directories nesting level for saving error reports');
+        $this->logger->info('Configuring directory nesting level for saving error reports');
         try {
             $errorReportConfigFile = $this->configFileList->getErrorReportConfig();
             if ($this->file->isExists($errorReportConfigFile)) {

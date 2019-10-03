@@ -104,7 +104,7 @@ class ReportDirNestingLevel implements ValidatorInterface
             if (null !== $reportConfigDirNestingLevel) {
                 $this->validateReportConfigDirNestingLevel($reportConfigDirNestingLevel);
                 $this->logger->notice(sprintf(
-                    'The property `config.report.dir_nesting_level` defined in the file %s with value '
+                    'The `config.report.dir_nesting_level` property defined in the file %s with value '
                     . '`%s` and  used to configure the directories nesting level for error reporting.',
                     $reportConfigFile,
                     $reportConfigDirNestingLevel

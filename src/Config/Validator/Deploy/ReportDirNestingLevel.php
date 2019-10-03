@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Psr\Log\LoggerInterface;
 
 /**
- * Validates a value of the directories nesting level for error reporting
+ * Validates the value specified for the directory nesting level conifgured for error reporting
  */
 class ReportDirNestingLevel implements ValidatorInterface
 {

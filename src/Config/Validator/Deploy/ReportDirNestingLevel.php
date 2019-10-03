@@ -176,7 +176,7 @@ class ReportDirNestingLevel implements ValidatorInterface
                 . 'defined in <magento_root>/pub/errors/local.xml is invalid',
                 $reportConfigDirNestingLevel
             ),
-            'The value of the property `config.report.dir_nesting_level` must be an integer between 0 and 32'
+            'The  value for the `config.report.dir_nesting_level` property must be an integer between 0 and 32'
         );
     }
 

@@ -101,7 +101,7 @@ class ReportDirNestingLevelTest extends TestCase
             ->method('notice')
             ->with(
                 sprintf(
-                    'The environment variable `MAGE_ERROR_REPORT_DIR_NESTING_LEVEL` with the value `%s`'
+                    'The `MAGE_ERROR_REPORT_DIR_NESTING_LEVEL` environment variable with the value `%s`'
                     . ' is used to configure the directories nesting level for error reporting. The environment'
                     . ' variable has a higher priority.  Value of the property `config.report.dir_nesting_level` in'
                     . ' the file <magento_root>/errors/local.xml will be ignored.',

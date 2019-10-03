@@ -91,7 +91,7 @@ class ReportDirNestingLevel implements ValidatorInterface
                 $this->validateEnvVarReportDirNestingLevel($envVarReportDirNestingLevel);
                 $this->logger->notice(sprintf(
                     'The `%s` environment variable  with the value `%s` specifies a custom value for the  directory'
-                    . ' nesting level for error reporting. The environment variable has a higher priority.  Value of'
+                    . ' nesting level configured for error reporting. This value overrides the value specified in'
                     . ' the property `config.report.dir_nesting_level` in the file %s will be ignored.',
                     Environment::ENV_MAGE_ERROR_REPORT_DIR_NESTING_LEVEL,
                     $envVarReportDirNestingLevel,

@@ -151,7 +151,7 @@ class ReportDirNestingLevel implements ValidatorInterface
                 Environment::ENV_MAGE_ERROR_REPORT_DIR_NESTING_LEVEL
             ),
             sprintf(
-                'The value of the environment variable `%s` must be an integer between 0 and 32',
+                'You must specify an integer value between 0 and 32.',
                 Environment::ENV_MAGE_ERROR_REPORT_DIR_NESTING_LEVEL
             )
         );

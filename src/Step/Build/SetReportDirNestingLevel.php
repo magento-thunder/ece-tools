@@ -91,7 +91,7 @@ XML
             );
             $this->logger->notice(
                 sprintf(
-                    'The file %s with property `config.report.dir_nesting_level`: `%s` was created.',
+                    'The file %s with the `config.report.dir_nesting_level` property: `%s` was created.',
                     $errorReportConfigFile,
                     $errorReportDirNestingLevel
                 )

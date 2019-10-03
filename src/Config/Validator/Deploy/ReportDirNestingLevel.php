@@ -146,7 +146,7 @@ class ReportDirNestingLevel implements ValidatorInterface
         }
         throw new ValidatorException(
             sprintf(
-                'The value `%s` of the environment variable `%s` is invalid.',
+                'The value `%s` specified for the `%s` environment variable is invalid.',
                 $envVarReportDirNestingLevel,
                 Environment::ENV_MAGE_ERROR_REPORT_DIR_NESTING_LEVEL
             ),

@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Creates the error handling configuration file `<magento_root>/pub/errors/local.xml`
- * with the configuration of the nesting level of directories for error reporting
+ *that specifies the directory nesting level configuration for error reporting
  */
 class SetReportDirNestingLevel implements StepInterface
 {

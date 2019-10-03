@@ -114,7 +114,7 @@ class ReportDirNestingLevel implements ValidatorInterface
 
             return $this->resultFactory->error(
                 'The directories nesting level for error reporting not set.',
-                'For set the directories nesting level use setting '
+                'You can configure the setting using the'
                 . '`config.report.dir_nesting_level` in the file ' . $reportConfigFile
             );
         } catch (FileSystemException $exception) {

@@ -124,7 +124,7 @@ class ReportDirNestingLevel implements ValidatorInterface
             $message .= $exception->getMessage();
             return $this->resultFactory->error(
                 $message,
-                'Fix the configuration of the directories nesting level for error reporting '
+                'Fix the directory nesting level configuration for error reporting '
                 . 'in the file ' . $reportConfigFile
             );
         } catch (ValidatorException $exception) {

@@ -89,7 +89,7 @@ class Manager
         $command = 'php ./vendor/bin/ece-patches apply';
 
         if ($this->globalSection->get(GlobalSection::VAR_DEPLOYED_MAGENTO_VERSION_FROM_GIT)) {
-            $command .= ' --git-installation 1';
+            $command .= ' --git-installation true';
         }
 
         try {

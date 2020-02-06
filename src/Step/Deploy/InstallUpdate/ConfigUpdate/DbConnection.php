@@ -163,7 +163,7 @@ class DbConnection implements StepInterface
         if (empty($mageSplitConnectionsConfig)
             || (!empty($mageSplitConnectionsConfig)
                 && $isCustomDefaultConnection)) {
-            $this->updateMainConnectionsConfig($useSlave);
+            $this->setOnlyMainConnectionsConfig($useSlave);
             return;
         }
 
@@ -181,17 +181,17 @@ class DbConnection implements StepInterface
             return;
         }
 
-        $this->updateSlaveConnectionsConfig($useSlave);
+        $this->updateConnectionsConfig($mageSplitConnectionsConfig, $useSlave);
     }
 
     /**
-     * Update main connection configurations of app/etc/env.php
+     * Establishes basic connection configurations of app/etc/env.php
      *
      * @param bool $useSlave
      * @throws FileSystemException
      * @throws ConfigException
      */
-    public function updateMainConnectionsConfig(bool $useSlave)
+    public function setOnlyMainConnectionsConfig(bool $useSlave)
     {
         $mageConfig = $this->getMageConfigData();
         $mageConfig[DbConfig::KEY_DB] = $this->getMainDbConfig($useSlave);
@@ -203,23 +203,34 @@ class DbConnection implements StepInterface
     }
 
     /**
-     * Updates db slave configurations
+     * Updates db configurations
      *
+     * @param array $mageSplitConnectionsConfig
      * @param bool $useSlave
      * @throws FileSystemException
      * @throws ConfigException
      */
-    private function updateSlaveConnectionsConfig(bool $useSlave)
+    private function updateConnectionsConfig(array $mageSplitConnectionsConfig, bool $useSlave)
     {
-        $mageConfig = $this->getMageConfigData();
-        if ($useSlave && $this->slaveIsAvailable()) {
-            $dbConfig = $this->getDbConfigData();
-            $slaveConnectionsConfig = $this->getMainConnections($dbConfig[DbConfig::KEY_SLAVE_CONNECTION]);
-            $mageConfig[DbConfig::KEY_DB][DbConfig::KEY_SLAVE_CONNECTION] = $slaveConnectionsConfig;
-            $this->addLoggingAboutSlaveConnection($mageConfig[DbConfig::KEY_DB]);
-        } else {
-            unset($mageConfig[DbConfig::KEY_DB][DbConfig::KEY_SLAVE_CONNECTION]);
+        $dbConfig = $this->getDbConfigData();
+        foreach (DbConfig::SPLIT_CONNECTIONS as $splitConnection) {
+            if (isset($mageSplitConnectionsConfig[$splitConnection])) {
+                $dbConfig[DbConfig::KEY_CONNECTION][$splitConnection] = $mageSplitConnectionsConfig[$splitConnection];
+            } elseif (isset($dbConfig[DbConfig::KEY_CONNECTION][$splitConnection])) {
+                unset($dbConfig[DbConfig::KEY_CONNECTION][$splitConnection]);
+            }
         }
+
+        if ($useSlave && $this->slaveIsAvailable()) {
+            $slaveConnectionsConfig = $this->getMainConnections($dbConfig[DbConfig::KEY_SLAVE_CONNECTION]);
+            $dbConfig[DbConfig::KEY_SLAVE_CONNECTION] = $slaveConnectionsConfig;
+            $this->addLoggingAboutSlaveConnection($dbConfig);
+        } else {
+            unset($dbConfig[DbConfig::KEY_SLAVE_CONNECTION]);
+        }
+
+        $mageConfig = $this->getMageConfigData();
+        $mageConfig[DbConfig::KEY_DB] = $dbConfig;
         $this->configWriter->create($mageConfig);
     }
 

@@ -149,20 +149,10 @@ class DbConnection implements StepInterface
         $this->logger->info('Updating env.php DB connection configuration.');
 
         $mageSplitConnectionsConfig = $this->getMageSplitConnectionsConfig();
-        $isCustomDefaultConnection = $this->isCustomDefaultConnection();
-
-        if (!empty($mageSplitConnectionsConfig) && $isCustomDefaultConnection) {
-            $this->logger->notice(
-                'Database was already split but deploy was configured with new connection.'
-                . ' The previous connection data will be ignored.'
-            );
-        }
 
         $useSlave = $this->stageConfig->get(DeployInterface::VAR_MYSQL_USE_SLAVE_CONNECTION);
 
-        if (empty($mageSplitConnectionsConfig)
-            || (!empty($mageSplitConnectionsConfig)
-                && $isCustomDefaultConnection)) {
+        if (empty($mageSplitConnectionsConfig)) {
             $this->setOnlyMainConnectionsConfig($useSlave);
             return;
         }
@@ -395,21 +385,6 @@ class DbConnection implements StepInterface
         return array_intersect_key(
             $this->getMageConfigData()[DbConfig::KEY_DB][DbConfig::KEY_CONNECTION],
             array_flip(DbConfig::SPLIT_CONNECTIONS)
-        );
-    }
-
-    /**
-     * Verifies that the application uses the custom configuration for the default connection.
-     *
-     * @return bool
-     * @throws ConfigException
-     * @throws FileSystemException
-     */
-    private function isCustomDefaultConnection(): bool
-    {
-        return !$this->isSameConnection(
-            $this->getDbConfigData()[DbConfig::KEY_CONNECTION][DbConfig::CONNECTION_DEFAULT],
-            $this->getMageConfigData()[DbConfig::KEY_DB][DbConfig::KEY_CONNECTION][DbConfig::CONNECTION_DEFAULT]
         );
     }
 }

@@ -66,6 +66,7 @@ class CleanupDbConfig implements StepInterface
     public function execute()
     {
         try {
+            $this->logger->debug('CLEANUP DB CONFIG');
             $envDbConfig = $this->dbConfig->get();
             $mageConfig = $this->configReader->read();
             $mageDbConfig = $mageConfig['db'] ?? [];

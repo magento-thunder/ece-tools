@@ -70,6 +70,7 @@ class CleanupDbConfig implements StepInterface
             $envDbConfig = $this->dbConfig->get();
             $mageConfig = $this->configReader->read();
             $mageDbConfig = $mageConfig['db'] ?? [];
+            $this->logger->debug($mageDbConfig);
 
             $mageSplitDbConnectionsConfig = array_intersect_key(
                 $mageDbConfig['connection'] ?? [],

@@ -85,10 +85,11 @@ class CleanupDbConfig implements StepInterface
                 $this->logger->notice(
                     'Previous split DB connection will be lost as new custom main connection was set'
                 );
-                unset($mageConfig[DbConfig::KEY_DB]);
-                unset($mageConfig[ResourceConfig::KEY_RESOURCE]);
+                $mageConfig[DbConfig::KEY_DB][DbConfig::KEY_CONNECTION] = [];
+                $mageConfig[ResourceConfig::KEY_RESOURCE] = [];
 
                 $this->configWriter->create($mageConfig);
+                sleep(10);
             }
         } catch (GenericException $e) {
             throw new StepException($e->getMessage(), $e->getCode(), $e);

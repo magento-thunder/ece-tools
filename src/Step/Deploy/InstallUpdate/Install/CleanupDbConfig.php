@@ -52,7 +52,8 @@ class CleanupDbConfig implements StepInterface
         ConfigWriter $configWriter,
         ConfigReader $configReader,
         DbConfig $dbConfig
-    ) {
+    )
+    {
         $this->logger = $logger;
         $this->configWriter = $configWriter;
         $this->configReader = $configReader;
@@ -84,8 +85,8 @@ class CleanupDbConfig implements StepInterface
                 $this->logger->notice(
                     'Previous split DB connection will be lost as new custom main connection was set'
                 );
-                $mageConfig[DbConfig::KEY_DB] = [];
-                $mageConfig[ResourceConfig::KEY_RESOURCE] = [];
+                unset($mageConfig[DbConfig::KEY_DB]);
+                unset($mageConfig[ResourceConfig::KEY_RESOURCE]);
 
                 $this->configWriter->create($mageConfig);
             }

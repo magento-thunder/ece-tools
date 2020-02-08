@@ -52,8 +52,7 @@ class CleanupDbConfig implements StepInterface
         ConfigWriter $configWriter,
         ConfigReader $configReader,
         DbConfig $dbConfig
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->configWriter = $configWriter;
         $this->configReader = $configReader;
@@ -70,7 +69,7 @@ class CleanupDbConfig implements StepInterface
             $envDbConfig = $this->dbConfig->get();
             $mageConfig = $this->configReader->read();
             $mageDbConfig = $mageConfig['db'] ?? [];
-            $this->logger->debug($mageDbConfig);
+            $this->logger->debug(var_export($mageDbConfig, true));
 
             $mageSplitDbConnectionsConfig = array_intersect_key(
                 $mageDbConfig['connection'] ?? [],

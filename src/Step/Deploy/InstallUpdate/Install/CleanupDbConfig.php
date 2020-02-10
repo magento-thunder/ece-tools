@@ -85,12 +85,13 @@ class CleanupDbConfig implements StepInterface
                     'Previous split DB connection will be lost as new custom main connection was set'
                 );
 
-                $mageConfig = array_intersect_key($mageConfig, array_flip([
-                    'cache',
-                    'MAGE_MODE',
-                    'cache_types',
-                    'cron'
-                ]));
+//                $mageConfig = array_intersect_key($mageConfig, array_flip([
+//                    'cache',
+//                    'MAGE_MODE',
+//                    'cache_types',
+//                    'cron'
+//                ]));
+                unlink($mageConfig['install']);
 
                 $this->configWriter->create($mageConfig);
             }

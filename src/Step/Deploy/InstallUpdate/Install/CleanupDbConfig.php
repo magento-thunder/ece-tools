@@ -70,7 +70,6 @@ class CleanupDbConfig implements StepInterface
             $envDbConfig = $this->dbConfig->get();
             $mageConfig = $this->configReader->read();
             $mageDbConfig = $mageConfig['db'] ?? [];
-            $this->logger->debug(var_export($mageConfig, true));
             $mageSplitDbConnectionsConfig = array_intersect_key(
                 $mageDbConfig['connection'] ?? [],
                 array_flip(DbConfig::SPLIT_CONNECTIONS)
@@ -85,13 +84,7 @@ class CleanupDbConfig implements StepInterface
                     'Previous split DB connection will be lost as new custom main connection was set'
                 );
 
-//                $mageConfig = array_intersect_key($mageConfig, array_flip([
-//                    'cache',
-//                    'MAGE_MODE',
-//                    'cache_types',
-//                    'cron'
-//                ]));
-                unlink($mageConfig['install']);
+                unlink($mageConfig['install'], $mageConfig['db']);
 
                 $this->configWriter->create($mageConfig);
             }

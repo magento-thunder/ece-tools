@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace Magento\MagentoCloud\Step\Deploy\InstallUpdate\Install;
 
 use Magento\MagentoCloud\App\GenericException;
-use Magento\MagentoCloud\Config\Database\ResourceConfig;
 use Magento\MagentoCloud\Step\StepException;
 use Magento\MagentoCloud\Step\StepInterface;
 use Magento\MagentoCloud\Config\Database\DbConfig;
@@ -17,7 +16,7 @@ use Magento\MagentoCloud\Config\Magento\Env\WriterInterface as ConfigWriter;
 use Psr\Log\LoggerInterface;
 
 /**
- *
+ * Cleans Magento database and resource configuration
  */
 class CleanupDbConfig implements StepInterface
 {
@@ -52,8 +51,7 @@ class CleanupDbConfig implements StepInterface
         ConfigWriter $configWriter,
         ConfigReader $configReader,
         DbConfig $dbConfig
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->configWriter = $configWriter;
         $this->configReader = $configReader;
@@ -61,12 +59,16 @@ class CleanupDbConfig implements StepInterface
     }
 
     /**
+     * Cleans Magento database and resource configurations in the case
+     * when split database connections exist  and
+     * the host of Magento default connection is different
+     * from the default connection host of environment configuration
+     *
      * @throws StepException
      */
     public function execute()
     {
         try {
-            $this->logger->debug('CLEANUP DB CONFIG');
             $envDbConfig = $this->dbConfig->get();
             $mageConfig = $this->configReader->read();
             $mageDbConfig = $mageConfig['db'] ?? [];
@@ -83,8 +85,9 @@ class CleanupDbConfig implements StepInterface
                 $this->logger->notice(
                     'Previous split DB connection will be lost as new custom main connection was set'
                 );
-
-                unset($mageConfig['db'], $mageConfig['resource']);
+                // The 'install' key needs to be deleted, because otherwise,
+                // during installation, Magento cannot use the new connections
+                unset($mageConfig['install'], $mageConfig['db'], $mageConfig['resource']);
 
                 $this->configWriter->create($mageConfig);
             }

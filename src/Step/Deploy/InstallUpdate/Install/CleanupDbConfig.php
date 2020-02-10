@@ -87,7 +87,11 @@ class CleanupDbConfig implements StepInterface
                 );
                 // The 'install' key needs to be deleted, because otherwise,
                 // during installation, Magento cannot use the new connections
-                unset($mageConfig['install'], $mageConfig['db'], $mageConfig['resource']);
+                unset(
+                    $mageConfig['install'],
+                    $mageConfig['db'],
+                    $mageConfig['resource']
+                );
 
                 $this->configWriter->create($mageConfig);
             }
